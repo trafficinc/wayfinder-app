@@ -1,0 +1,12 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use Wayfinder\Console\Application;
+
+$_SERVER['WAYFINDER_CONSOLE_COMMAND'] = $argv[1] ?? 'list';
+
+$container = require __DIR__ . '/bootstrap/container.php';
+
+exit($container->get(Application::class)->run($argv));
