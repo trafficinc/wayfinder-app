@@ -19,7 +19,7 @@ This directory is the canonical starter app that should live as the `trafficinc/
 It intentionally does not include sample domain features like tasks, projects, blog pages, queue demos, or mail demos.
 
 ## More Framework Documentation
-More information about the framework is here: [wayfinder/core]([wayfinder/core](https://github.com/trafficinc/wayfinder-core))
+More information about the framework is here: [wayfinder/core](https://github.com/trafficinc/wayfinder-core)
 
 ## Modules
 
