@@ -1,8 +1,10 @@
-# Wayfinder App
+# Wayfinder PHP Framework
 
 Default starter application for Wayfinder.
 
-For published package names, GitHub repo layout, and the recommended local Composer override workflow while developing `wayfinder/core`, see [docs/local-development.md](/Users/ronbailey/Projects/wayfinder/docs/local-development.md:1).
+Wayfinder is a next-generation PHP framework built for clarity. It stays explicit and simple so both developers and AI tools can reason about the codebase quickly. Instead of hiding behavior behind large amounts of framework magic, Wayfinder keeps the application surface small and visible, which makes building and evolving features easier.
+
+For published package names, GitHub repo layout, and the recommended local Composer override workflow while developing `wayfinder/core`, see `docs/local-development.md`.
 
 This directory is the canonical starter app that should live as the `trafficinc/wayfinder-app` repository. It is the minimal shape for a new Wayfinder project. It includes:
 
@@ -15,6 +17,27 @@ This directory is the canonical starter app that should live as the `trafficinc/
 - PHPUnit bootstrap
 
 It intentionally does not include sample domain features like tasks, projects, blog pages, queue demos, or mail demos.
+
+## Modules
+
+The starter app is module-ready. First-party packaged modules can be installed with:
+
+```bash
+php wayfinder module:install auth
+```
+
+That command:
+
+1. runs Composer for the package
+2. creates a symlink in `Modules/`
+
+Generic packaged modules and local custom modules are also supported:
+
+```bash
+php wayfinder module:install vendor/package --module=Blog
+php wayfinder module:install /absolute/path/to/MyModule --module=MyModule
+php wayfinder module:uninstall auth
+```
 
 ## Run locally
 

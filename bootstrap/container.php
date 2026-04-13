@@ -22,6 +22,8 @@ use Wayfinder\Console\MigrateRefreshCommand;
 use Wayfinder\Console\MigrateResetCommand;
 use Wayfinder\Console\MigrateRollbackCommand;
 use Wayfinder\Console\MigrateStatusCommand;
+use Wayfinder\Console\ModuleInstallCommand;
+use Wayfinder\Console\ModuleUninstallCommand;
 use Wayfinder\Console\RouteCacheCommand;
 use Wayfinder\Console\RouteClearCommand;
 use Wayfinder\Console\RouteListCommand;
@@ -263,6 +265,16 @@ $container->singleton(ConsoleApplication::class, static fn (Container $container
     ))
     ->add(new MakeMigrationCommand((string) $config->get('database.migrations_path', __DIR__ . '/../database/migrations')))
     ->add(new MakeSessionTableCommand((string) $config->get('database.migrations_path', __DIR__ . '/../database/migrations')))
+    ->add(new ModuleInstallCommand(
+        __DIR__ . '/..',
+        (string) $config->get('modules.path', __DIR__ . '/../Modules'),
+        is_array($config->get('modules.packages', [])) ? $config->get('modules.packages', []) : [],
+    ))
+    ->add(new ModuleUninstallCommand(
+        __DIR__ . '/..',
+        (string) $config->get('modules.path', __DIR__ . '/../Modules'),
+        is_array($config->get('modules.packages', [])) ? $config->get('modules.packages', []) : [],
+    ))
     ->add(new KeyGenerateCommand(__DIR__ . '/../.env'))
     ->add(new ConfigCacheCommand($config, (string) $config->get('app.config_cache_path', __DIR__ . '/cache/config.php')))
     ->add(new ConfigClearCommand((string) $config->get('app.config_cache_path', __DIR__ . '/cache/config.php')))
