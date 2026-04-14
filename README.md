@@ -21,6 +21,8 @@ It intentionally does not include sample domain features like tasks, projects, b
 ## More Framework Documentation
 More information about the framework is here: [wayfinder/core](https://github.com/trafficinc/wayfinder-core)
 
+Full sample application, a Task app: [wayfinder-task-app](https://github.com/trafficinc/wayfinder-task-app)
+
 ## Modules
 
 The starter app is module-ready. First-party packaged modules can be installed with:
