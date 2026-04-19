@@ -21,7 +21,7 @@ It intentionally does not include sample domain features like tasks, projects, b
 ## More Framework Documentation
 More information about the framework is here: [wayfinder/core](https://github.com/trafficinc/wayfinder-core)
 
-A sample application is here: [wayfinder-task-app](https://github.com/trafficinc/wayfinder-task-app)
+A sample application is here: [stackmint-task-app](https://github.com/trafficinc/stackmint-task-app)
 
 ## Using the Framework
 
@@ -315,7 +315,7 @@ php wayfinder module:uninstall auth
 php wayfinder module:uninstall MyModule
 ```
 
-If you install `wayfinder/auth`, set the signed-in destination in your app config:
+If you install `trafficinc/stackmint-auth`, set the signed-in destination in your app config:
 
 ```php
 return [
@@ -387,7 +387,7 @@ For distribution, package a module as its own Composer library instead of copyin
 Recommended structure for a distributable module package:
 
 ```text
-wayfinder-auth/
+stackmint-auth/
   composer.json
   module.php
   ModuleServiceProvider.php
@@ -402,7 +402,7 @@ wayfinder-auth/
   README.md
 ```
 
-Keep foundational app schema out of the module package. For example, the `users` table should stay in the starter app or host application, while a module like `wayfinder/auth` should only own auth-specific tables if it truly needs them.
+Keep foundational app schema out of the module package. For example, the `users` table should stay in the starter app or host application, while a module like `trafficinc/stackmint-auth` should only own auth-specific tables if it truly needs them.
 
 ## CLI and Testing
 
@@ -506,4 +506,4 @@ php wayfinder migrate
 php wayfinder serve
 ```
 
-The starter app owns foundational schema like the `users` table. Modules such as `wayfinder/auth` should stay focused on auth behavior and only bring along module-specific schema when necessary.
+The starter app owns foundational schema like the `users` table. Modules such as `trafficinc/stackmint-auth` should stay focused on auth behavior and only bring along module-specific schema when necessary.

@@ -8,9 +8,9 @@ return [
     'cache_path' => __DIR__ . '/../bootstrap/cache/modules.php',
     'packages' => [
         'auth' => [
-            'package' => 'wayfinder/auth',
+            'package' => 'trafficinc/stackmint-auth',
             'module' => 'Auth',
-            'repository' => 'https://github.com/trafficinc/wayfinder-auth',
+            'repository' => 'https://github.com/trafficinc/stackmint-auth',
         ],
     ],
     'enabled' => [],
