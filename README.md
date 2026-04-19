@@ -1,10 +1,10 @@
-# Stackmint PHP App Skeleton
+# Stackmint PHP Framework
 
-Default starter application for Stackmint, built on Wayfinder.
+Default starter application for the Stackmint framework.
 
-Wayfinder is a next-generation PHP framework built for clarity. It stays explicit and simple so both developers and AI tools can reason about the codebase quickly. Instead of hiding behavior behind large amounts of framework magic, Wayfinder keeps the application surface small and visible, which makes building and evolving features easier.
+Stackmint is a next-generation PHP framework built for clarity. It stays explicit and simple so both developers and AI tools can reason about the codebase quickly. Instead of hiding behavior behind large amounts of framework magic, Stackmint keeps the application surface small and visible, which makes building and evolving features easier.
 
-For published package names, GitHub repo layout, and the recommended local Composer override workflow while developing `wayfinder/core`, see `docs/local-development.md`.
+The runtime package is currently published as `wayfinder/core`, and the framework namespaces remain `Wayfinder\\...`. For package layout, GitHub repo distribution, and local Composer override workflow, see `docs/local-development.md`.
 
 This directory is the canonical starter app that should live as the `trafficinc/stackmint` repository. It is the minimal shape for a new Stackmint project. It includes:
 
