@@ -14,6 +14,7 @@ use Wayfinder\Console\KeyGenerateCommand;
 use Wayfinder\Console\MakeControllerCommand;
 use Wayfinder\Console\MakeMiddlewareCommand;
 use Wayfinder\Console\MakeMigrationCommand;
+use Wayfinder\Console\MakeQueueTableCommand;
 use Wayfinder\Console\MakeRequestCommand;
 use Wayfinder\Console\MakeSessionTableCommand;
 use Wayfinder\Console\MakeViewCommand;
@@ -44,6 +45,7 @@ use Wayfinder\Logging\NullLogger;
 use Wayfinder\Mail\MailFactory;
 use Wayfinder\Mail\Mailer;
 use Wayfinder\Module\ModuleManager;
+use Wayfinder\Queue\JobDispatcher;
 use Wayfinder\Queue\Queue;
 use Wayfinder\Queue\QueueFactory;
 use Wayfinder\Queue\Worker;
@@ -114,7 +116,7 @@ $container->singleton(Logger::class, static fn (): Logger => (static function ()
     }
 
     return new FileLogger(
-        (string) ($channel['path'] ?? __DIR__ . '/../storage/logs/wayfinder.log'),
+        (string) ($channel['path'] ?? __DIR__ . '/../storage/logs/stackmint.log'),
         (string) ($channel['level'] ?? 'debug'),
     );
 })());
@@ -127,17 +129,26 @@ $container->singleton(Mailer::class, static fn (Container $container): Mailer =>
     return $container->get(MailFactory::class)->make(is_array($mailer) ? $mailer : []);
 })());
 
-$container->singleton(QueueFactory::class);
+$container->singleton(QueueFactory::class, static fn (Container $container): QueueFactory => new QueueFactory(
+    is_array($config->get('database.default')) ? $container->get(Database::class) : null,
+));
 $container->singleton(Queue::class, static fn (Container $container): Queue => (static function () use ($config, $container): Queue {
     $default = (string) $config->get('queue.default', 'file');
     $connection = $config->get("queue.connections.{$default}", []);
 
     return $container->get(QueueFactory::class)->make(is_array($connection) ? $connection : []);
 })());
+$container->singleton(JobDispatcher::class, static fn (Container $container): JobDispatcher => new JobDispatcher(
+    $container->get(Queue::class),
+    $container,
+    $container->get(Logger::class),
+    (string) $config->get('queue.default', 'file') === 'sync',
+));
 $container->singleton(Worker::class, static fn (Container $container): Worker => new Worker(
     $container->get(Queue::class),
     $container,
     $container->get(Logger::class),
+    (int) $config->get('queue.max_attempts', 3),
 ));
 
 $databaseConfig = $config->get('database.default');
@@ -177,7 +188,7 @@ $container->singleton(CsrfTokenManager::class, static fn (): CsrfTokenManager =>
 $container->singleton(StartSession::class, static fn (Container $container): StartSession => new StartSession(
     $container->get(SessionStore::class),
     $container->get(SessionManager::class),
-    (string) $config->get('session.cookie', 'wayfinder_session'),
+    (string) $config->get('session.cookie', 'stackmint_session'),
     (int) $config->get('session.lifetime', 7200),
     (string) $config->get('session.path', '/'),
     (string) $config->get('session.domain', ''),
@@ -264,6 +275,7 @@ $container->singleton(ConsoleApplication::class, static fn (Container $container
         (string) $config->get('app.views_extension', 'php'),
     ))
     ->add(new MakeMigrationCommand((string) $config->get('database.migrations_path', __DIR__ . '/../database/migrations')))
+    ->add(new MakeQueueTableCommand((string) $config->get('database.migrations_path', __DIR__ . '/../database/migrations')))
     ->add(new MakeSessionTableCommand((string) $config->get('database.migrations_path', __DIR__ . '/../database/migrations')))
     ->add(new ModuleInstallCommand(
         __DIR__ . '/..',

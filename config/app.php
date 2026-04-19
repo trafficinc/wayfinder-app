@@ -9,7 +9,7 @@ use Wayfinder\Security\ValidateSignature;
 use Wayfinder\Session\StartSession;
 
 return [
-    'name' => $_ENV['APP_NAME'] ?? 'Wayfinder App',
+    'name' => $_ENV['APP_NAME'] ?? 'Stackmint',
     'key' => $_ENV['APP_KEY'] ?? null,
     'url' => $_ENV['APP_URL'] ?? 'http://localhost:8000',
     'version' => $_ENV['APP_VER'] ?? '0.1.0',

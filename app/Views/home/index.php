@@ -494,15 +494,15 @@
         <nav class="topnav">
             <span>v<?= htmlspecialchars($appVersion, ENT_QUOTES, 'UTF-8') ?></span>
             <a href="/health">Health</a>
-            <a href="https://github.com/trafficinc/wayfinder-app">GitHub</a>
+            <a href="https://github.com/trafficinc/stackmint">GitHub</a>
         </nav>
     </header>
 
     <section class="hero">
         <article class="panel hero-panel">
-            <div class="eyebrow">Wayfinder is installed</div>
+            <div class="eyebrow">Stackmint is installed</div>
             <h1>Build in public code, not hidden framework layers.</h1>
-            <p class="lede">Wayfinder keeps the application surface explicit so developers and AI tools can reason about routing, requests, views, validation, and data access without digging through heavy framework indirection.</p>
+            <p class="lede">Stackmint is the application layer on top of Wayfinder, keeping the surface explicit so developers and AI tools can reason about routing, requests, views, validation, and data access without digging through heavy framework indirection.</p>
             <div class="cta-row">
                 <a class="button button-primary" href="/health">Run Health Check</a>
                 <a class="button button-secondary" href="#demo">See Request Demo</a>
@@ -532,7 +532,7 @@
                 <div class="status-item">
                     <div>
                         <dt>Framework</dt>
-                        <dd>Wayfinder v<?= htmlspecialchars($appVersion, ENT_QUOTES, 'UTF-8') ?></dd>
+                        <dd>Stackmint on Wayfinder v<?= htmlspecialchars($appVersion, ENT_QUOTES, 'UTF-8') ?></dd>
                     </div>
                     <span class="status-badge">Ready</span>
                 </div>
@@ -555,7 +555,7 @@
     </section>
 
     <section>
-        <p class="section-label">Why Wayfinder</p>
+        <p class="section-label">Why Stackmint</p>
         <div class="feature-grid">
             <article class="panel feature-card">
                 <strong>HTTP</strong>
@@ -575,7 +575,7 @@
             <article class="panel feature-card">
                 <strong>AI</strong>
                 <h2>Smaller code surface, clearer reasoning</h2>
-                <p>Wayfinder is designed so humans and AI tools can trace behavior quickly instead of sifting through hidden framework internals.</p>
+                <p>Stackmint is designed so humans and AI tools can trace application behavior quickly instead of sifting through hidden framework internals.</p>
             </article>
         </div>
     </section>

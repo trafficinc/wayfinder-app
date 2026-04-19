@@ -1,12 +1,12 @@
-# Wayfinder PHP Framework
+# Stackmint PHP App Skeleton
 
-Default starter application for Wayfinder.
+Default starter application for Stackmint, built on Wayfinder.
 
 Wayfinder is a next-generation PHP framework built for clarity. It stays explicit and simple so both developers and AI tools can reason about the codebase quickly. Instead of hiding behavior behind large amounts of framework magic, Wayfinder keeps the application surface small and visible, which makes building and evolving features easier.
 
 For published package names, GitHub repo layout, and the recommended local Composer override workflow while developing `wayfinder/core`, see `docs/local-development.md`.
 
-This directory is the canonical starter app that should live as the `trafficinc/wayfinder-app` repository. It is the minimal shape for a new Wayfinder project. It includes:
+This directory is the canonical starter app that should live as the `trafficinc/stackmint` repository. It is the minimal shape for a new Stackmint project. It includes:
 
 - the default landing page at `/`
 - a health route at `/health`
@@ -485,6 +485,13 @@ cp .env.example .env
 php wayfinder key:generate
 php wayfinder migrate
 php wayfinder serve
+```
+
+Set `QUEUE_CONNECTION=sync` in `.env` for immediate local job execution. You can also use `QUEUE_CONNECTION=file`, `QUEUE_CONNECTION=database`, or `QUEUE_CONNECTION=redis`. If you switch to `QUEUE_CONNECTION=database`, generate the queue migration first:
+
+```bash
+php wayfinder make:queue-table
+php wayfinder migrate
 ```
 
 You can also scaffold a new app from the starter with:

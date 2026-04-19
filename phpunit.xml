@@ -5,7 +5,7 @@
          colors="true"
          cacheDirectory=".phpunit.cache">
     <testsuites>
-        <testsuite name="Wayfinder App">
+        <testsuite name="Stackmint App">
             <directory>tests</directory>
         </testsuite>
     </testsuites>

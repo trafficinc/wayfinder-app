@@ -12,6 +12,6 @@ return [
     ],
     'from' => [
         'address' => $_ENV['MAIL_FROM_ADDRESS'] ?? 'no-reply@example.com',
-        'name' => $_ENV['MAIL_FROM_NAME'] ?? ($_ENV['APP_NAME'] ?? 'Wayfinder App'),
+        'name' => $_ENV['MAIL_FROM_NAME'] ?? ($_ENV['APP_NAME'] ?? 'Stackmint'),
     ],
 ];

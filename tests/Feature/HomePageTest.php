@@ -29,6 +29,6 @@ final class HomePageTest extends TestCase
         $this->client
             ->get('/health')
             ->assertStatus(200)
-            ->assertSee('Wayfinder app is running.');
+            ->assertSee('Stackmint app is running.');
     }
 }

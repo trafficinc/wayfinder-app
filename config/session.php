@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 return [
     'driver' => $_ENV['SESSION_DRIVER'] ?? 'file',
-    'cookie' => $_ENV['SESSION_COOKIE'] ?? 'wayfinder_session',
+    'cookie' => $_ENV['SESSION_COOKIE'] ?? 'stackmint_session',
     'lifetime' => (int) ($_ENV['SESSION_LIFETIME'] ?? 7200),
     'path' => '/',
     'domain' => $_ENV['SESSION_DOMAIN'] ?? '',

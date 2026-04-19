@@ -7,7 +7,7 @@ return [
     'channels' => [
         'file' => [
             'driver' => 'file',
-            'path' => __DIR__ . '/../storage/logs/wayfinder.log',
+            'path' => __DIR__ . '/../storage/logs/stackmint.log',
             'level' => $_ENV['LOG_LEVEL'] ?? 'debug',
         ],
     ],

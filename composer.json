@@ -1,6 +1,6 @@
 {
-    "name": "wayfinder/app",
-    "description": "Default application skeleton for the Wayfinder framework.",
+    "name": "trafficinc/stackmint",
+    "description": "Default Stackmint application skeleton built on the Wayfinder framework.",
     "type": "project",
     "license": "MIT",
     "require": {
