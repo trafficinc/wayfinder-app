@@ -20,8 +20,8 @@ final class HomePageTest extends TestCase
         $this->client
             ->get('/')
             ->assertStatus(200)
-            ->assertSee('Build PHP apps with explicit structure')
-            ->assertSee('Interactive Demo');
+            ->assertSee('Build in public code, not hidden framework layers.')
+            ->assertSee('Request Demo');
     }
 
     public function test_health_endpoint_returns_ok(): void
