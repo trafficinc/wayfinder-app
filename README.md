@@ -174,7 +174,7 @@ For browser form posts inside the session middleware, validation failures redire
 
 ```php
 <?= $form->csrfField() ?>
-<input name="email" value="<?= htmlspecialchars((string) $form->old('email', ''), ENT_QUOTES, 'UTF-8') ?>">
+<input name="email" value="<?= e((string) $form->old('email', '')) ?>">
 ```
 
 Validation can also target a named error bag:
