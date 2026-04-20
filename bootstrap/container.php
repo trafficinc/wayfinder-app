@@ -8,13 +8,17 @@ use Wayfinder\Auth\Gate;
 use Wayfinder\Cache\Cache;
 use Wayfinder\Cache\CacheFactory;
 use Wayfinder\Console\Application as ConsoleApplication;
+use Wayfinder\Console\ArchitectureLintCommand;
 use Wayfinder\Console\ConfigCacheCommand;
 use Wayfinder\Console\ConfigClearCommand;
 use Wayfinder\Console\KeyGenerateCommand;
 use Wayfinder\Console\MakeControllerCommand;
+use Wayfinder\Console\MakeDtoCommand;
 use Wayfinder\Console\MakeMiddlewareCommand;
+use Wayfinder\Console\MakeModelCommand;
 use Wayfinder\Console\MakeMigrationCommand;
 use Wayfinder\Console\MakeQueueTableCommand;
+use Wayfinder\Console\MakeQueryCommand;
 use Wayfinder\Console\MakeRequestCommand;
 use Wayfinder\Console\MakeSessionTableCommand;
 use Wayfinder\Console\MakeViewCommand;
@@ -258,6 +262,7 @@ $container->instance(AppKernel::class, new AppKernel(
 $frameworkVersion = \Wayfinder\Foundation\Version::VALUE;
 
 $container->singleton(ConsoleApplication::class, static fn (Container $container): ConsoleApplication => (new ConsoleApplication($frameworkVersion))
+    ->add(new ArchitectureLintCommand(__DIR__ . '/..'))
     ->add(new MakeControllerCommand(
         __DIR__ . '/../app/Controllers',
         (string) $config->get('app.controllers_namespace', 'App\\Controllers'),
@@ -269,6 +274,24 @@ $container->singleton(ConsoleApplication::class, static fn (Container $container
     ->add(new MakeRequestCommand(
         __DIR__ . '/../app/Requests',
         'App\\Requests',
+    ))
+    ->add(new MakeModelCommand(
+        __DIR__ . '/../app',
+        'App',
+        (string) $config->get('modules.path', __DIR__ . '/../Modules'),
+        'Modules',
+    ))
+    ->add(new MakeQueryCommand(
+        __DIR__ . '/../app',
+        'App',
+        (string) $config->get('modules.path', __DIR__ . '/../Modules'),
+        'Modules',
+    ))
+    ->add(new MakeDtoCommand(
+        __DIR__ . '/../app',
+        'App',
+        (string) $config->get('modules.path', __DIR__ . '/../Modules'),
+        'Modules',
     ))
     ->add(new MakeViewCommand(
         (string) $config->get('app.views_path', __DIR__ . '/../app/Views'),

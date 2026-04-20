@@ -4,21 +4,15 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a10f4617bd26cf5fae2018ec47c99e18",
+    "content-hash": "75069ecf43069e6552beee3b5d72e68b",
     "packages": [
         {
             "name": "wayfinder/core",
-            "version": "dev-main",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/trafficinc/wayfinder-core.git",
-                "reference": "07bd6ca7bc2e0cc95fca2596606d5671198b4d28"
-            },
+            "version": "0.1.0",
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/trafficinc/wayfinder-core/zipball/07bd6ca7bc2e0cc95fca2596606d5671198b4d28",
-                "reference": "07bd6ca7bc2e0cc95fca2596606d5671198b4d28",
-                "shasum": ""
+                "type": "path",
+                "url": "../framework",
+                "reference": "79d04103e4d7c4eb8a12052bc1112f1b0c36a1eb"
             },
             "require": {
                 "php": "^8.2"
@@ -26,7 +20,6 @@
             "require-dev": {
                 "phpunit/phpunit": "^11.5"
             },
-            "default-branch": true,
             "bin": [
                 "bin/wayfinder"
             ],
@@ -48,11 +41,10 @@
                 "MIT"
             ],
             "description": "Wayfinder, an explicit, no-magic PHP framework core.",
-            "support": {
-                "source": "https://github.com/trafficinc/wayfinder-core/tree/main",
-                "issues": "https://github.com/trafficinc/wayfinder-core/issues"
-            },
-            "time": "2026-04-17T14:47:47+00:00"
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         }
     ],
     "packages-dev": [
