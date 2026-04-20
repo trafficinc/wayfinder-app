@@ -200,6 +200,46 @@ Wayfinder also autoloads plain PHP template helpers:
 
 `Wayfinder\Database\Database` is a thin fluent query builder on top of PDO with support for `mysql`, `pgsql`, and `sqlite`. The preferred application-facing entry point is `Wayfinder\Database\DB`.
 
+> Do these DB commands return objects or arrays?
+
+  For example:
+
+  - DB::raw(...) returns list<array<string, mixed>>
+  - DB::query(...) returns list<array<string, mixed>>
+  - DB::firstResult(...) returns array<string, mixed>|false
+  - DB::statement(...) returns int
+  - DB::select('users') returns a QueryBuilder
+
+  So this:
+
+  ```$rows = DB::raw('SELECT * FROM tasks WHERE status = ?', ['open']);```
+
+gives you:
+
+```
+  [
+      ['id' => 1, 'title' => '...', 'status' => 'open'],
+      ['id' => 2, 'title' => '...', 'status' => 'open'],
+  ]
+```
+
+  If you want Task (or any) objects, you map the rows into the model yourself:
+
+```
+  $tasks = array_map(
+      static fn (array $row): Task => Task::fromDatabaseRow($row),
+      $rows
+  );
+```
+
+Or use the model API directly:
+
+```
+  $tasks = Task::where('status', 'open')->get();
+```
+
+  That returns Task objects.
+
 > namespace Modules\Tasks\Models; (Example for a Task Module Model) or namespace app\Models; (Example for a framework Model)
 
 Use a simple data model:
