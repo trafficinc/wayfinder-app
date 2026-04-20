@@ -200,6 +200,836 @@ Wayfinder also autoloads plain PHP template helpers:
 
 `Wayfinder\Database\Database` is a thin fluent query builder on top of PDO with support for `mysql`, `pgsql`, and `sqlite`. The preferred application-facing entry point is `Wayfinder\Database\DB`.
 
+> namespace Modules\Tasks\Models; (Example for a Task Module Model) or namespace app\Models; (Example for a framework Model)
+
+Use a simple data model:
+
+```php
+<?php
+
+  namespace Modules\Tasks\Models;
+
+  use Wayfinder\Database\DB;
+  use Wayfinder\Database\Model;
+
+  final class Task extends Model
+  {
+      protected static string $table = 'tasks';
+
+      /**
+       * @return list<self>
+       */
+      public static function openTasks(): array
+      {
+          $rows = DB::raw(
+              '
+                  SELECT *
+                  FROM tasks
+                  WHERE status = ?
+                  ORDER BY id DESC
+              ',
+              ['open']
+          );
+
+          return array_map(
+              static fn (array $row): self => self::fromDatabaseRow($row),
+              $rows
+          );
+      }
+  }
+```
+
+```php
+  <?php
+
+  namespace Modules\Tasks\Models;
+
+  use Wayfinder\Database\DB;
+  use Wayfinder\Database\Model;
+
+  final class Task extends Model
+  {
+      protected static string $table = 'tasks';
+
+      public static function findBySlug(string $slug): ?self
+      {
+          $rows = DB::raw(
+              '
+                  SELECT *
+                  FROM tasks
+                  WHERE slug = ?
+                  LIMIT 1
+              ',
+              [$slug]
+          );
+
+          if ($rows === []) {
+              return null;
+          }
+
+          return self::fromDatabaseRow($rows[0]);
+      }
+  }
+```
+
+```php
+  <?php
+
+  namespace Modules\Tasks\Models;
+
+  use Wayfinder\Database\DB;
+  use Wayfinder\Database\Model;
+
+  final class Task extends Model
+  {
+      protected static string $table = 'tasks';
+
+      public static function countCompletedForProject(int $projectId): int
+      {
+          $rows = DB::raw(
+              '
+                  SELECT COUNT(*) AS aggregate_count
+                  FROM tasks
+                  WHERE project_id = ?
+                    AND status = ?
+              ',
+              [$projectId, 'done']
+          );
+
+          return (int) ($rows[0]['aggregate_count'] ?? 0);
+      }
+  }
+```
+
+```php
+  <?php
+
+  namespace Modules\Tasks\Models;
+
+  use Wayfinder\Database\DB;
+  use Wayfinder\Database\Model;
+
+  final class Task extends Model
+  {
+      protected static string $table = 'tasks';
+
+      /**
+       * @return list<self>
+       */
+      public static function recentlyUpdated(int $limit = 10): array
+      {
+          $rows = DB::raw(
+              '
+                  SELECT *
+                  FROM tasks
+                  WHERE archived_at IS NULL
+                  ORDER BY updated_at DESC
+                  LIMIT ?
+              ',
+              [$limit]
+          );
+
+          return array_map(
+              static fn (array $row): self => self::fromDatabaseRow($row),
+              $rows
+          );
+      }
+  }
+```
+
+```php
+  <?php
+
+  namespace Modules\Tasks\Models;
+
+  use Wayfinder\Database\DB;
+  use Wayfinder\Database\Model;
+
+  final class Task extends Model
+  {
+      protected static string $table = 'tasks';
+
+      /**
+       * @return list<self>
+       */
+      public static function overdueTasks(string $today): array
+      {
+          $rows = DB::raw(
+              '
+                  SELECT *
+                  FROM tasks
+                  WHERE due_date < ?
+                    AND status != ?
+                  ORDER BY due_date ASC, id ASC
+              ',
+              [$today, 'done']
+          );
+
+          return array_map(
+              static fn (array $row): self => self::fromDatabaseRow($row),
+              $rows
+          );
+      }
+  }
+```
+
+  And one example of what to avoid in a Model:
+```php
+  // Avoid in Task model if this becomes a multi-table read/report:
+  $rows = DB::raw(
+      '
+          SELECT t.*, p.name AS project_name
+          FROM tasks t
+          INNER JOIN projects p ON p.id = t.project_id
+      '
+  );
+```
+
+> That should usually move to a Query + DTO, because it is no longer just tasks entity behavior.
+
+```php
+<?php
+
+  namespace Modules\Tasks\Models;
+
+  use Wayfinder\Database\DB;
+  use Wayfinder\Database\Model;
+
+  final class Task extends Model
+  {
+      protected static string $table = 'tasks';
+
+      public static function createTask(
+          string $title,
+          string $status = 'open',
+          ?int $projectId = null,
+      ): self {
+          DB::statement(
+              '
+                  INSERT INTO tasks (title, status, project_id, created_at, updated_at)
+                  VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+              ',
+              [$title, $status, $projectId]
+          );
+
+          $id = DB::connection()->lastInsertId();
+
+          return self::find((int) $id);
+      }
+  }
+```
+
+```php
+  <?php
+
+  namespace Modules\Tasks\Models;
+
+  use Wayfinder\Database\DB;
+  use Wayfinder\Database\Model;
+
+  final class Task extends Model
+  {
+      protected static string $table = 'tasks';
+
+      public function rename(string $title): void
+      {
+          DB::statement(
+              '
+                  UPDATE tasks
+                  SET title = ?, updated_at = CURRENT_TIMESTAMP
+                  WHERE id = ?
+              ',
+              [$title, $this->getKey()]
+          );
+
+          $this->title = $title;
+      }
+  }
+```
+
+```php
+  <?php
+
+  namespace Modules\Tasks\Models;
+
+  use Wayfinder\Database\DB;
+  use Wayfinder\Database\Model;
+
+  final class Task extends Model
+  {
+      protected static string $table = 'tasks';
+
+      public function markDone(): void
+      {
+          DB::statement(
+              '
+                  UPDATE tasks
+                  SET status = ?, updated_at = CURRENT_TIMESTAMP
+                  WHERE id = ?
+              ',
+              ['done', $this->getKey()]
+          );
+
+          $this->status = 'done';
+      }
+  }
+```
+
+```php
+  <?php
+
+  namespace Modules\Tasks\Models;
+
+  use Wayfinder\Database\DB;
+  use Wayfinder\Database\Model;
+
+  final class Task extends Model
+  {
+      protected static string $table = 'tasks';
+
+      public static function archiveCompletedForProject(int $projectId): int
+      {
+          return DB::statement(
+              '
+                  UPDATE tasks
+                  SET archived_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+                  WHERE project_id = ?
+                    AND status = ?
+                    AND archived_at IS NULL
+              ',
+              [$projectId, 'done']
+          );
+      }
+  }
+```
+
+```php
+  <?php
+
+  namespace Modules\Tasks\Models;
+
+  use Wayfinder\Database\DB;
+  use Wayfinder\Database\Model;
+
+  final class Task extends Model
+  {
+      protected static string $table = 'tasks';
+
+      public function remove(): bool
+      {
+          $deleted = DB::statement(
+              '
+                  DELETE FROM tasks
+                  WHERE id = ?
+              ',
+              [$this->getKey()]
+          );
+
+          return $deleted > 0;
+      }
+  }
+```
+
+```php
+  <?php
+
+  namespace Modules\Tasks\Models;
+
+  use Wayfinder\Database\DB;
+  use Wayfinder\Database\Model;
+
+  final class Task extends Model
+  {
+      protected static string $table = 'tasks';
+
+      public static function purgeArchivedBefore(string $cutoff): int
+      {
+          return DB::statement(
+              '
+                  DELETE FROM tasks
+                  WHERE archived_at IS NOT NULL
+                    AND archived_at < ?
+              ',
+              [$cutoff]
+          );
+      }
+  }
+```
+
+```php
+  <?php
+
+  namespace Modules\Tasks\Models;
+
+  use Wayfinder\Database\DB;
+  use Wayfinder\Database\Model;
+
+  final class Task extends Model
+  {
+      protected static string $table = 'tasks';
+
+      /**
+       * @return list<self>
+       */
+      public static function page(int $page = 1, int $perPage = 20): array
+      {
+          $page = max(1, $page);
+          $perPage = max(1, $perPage);
+          $offset = ($page - 1) * $perPage;
+
+          $rows = DB::raw(
+              '
+                  SELECT *
+                  FROM tasks
+                  ORDER BY id DESC
+                  LIMIT ?
+                  OFFSET ?
+              ',
+              [$perPage, $offset]
+          );
+
+          return array_map(
+              static fn (array $row): self => self::fromDatabaseRow($row),
+              $rows
+          );
+      }
+  }
+```
+
+```php
+  <?php
+
+  namespace Modules\Tasks\Models;
+
+  use Wayfinder\Database\DB;
+  use Wayfinder\Database\Model;
+
+  final class Task extends Model
+  {
+      protected static string $table = 'tasks';
+
+      /**
+       * @return array{
+       *     items: list<self>,
+       *     total: int,
+       *     page: int,
+       *     per_page: int
+       * }
+       */
+      public static function paginate(int $page = 1, int $perPage = 20): array
+      {
+          $page = max(1, $page);
+          $perPage = max(1, $perPage);
+          $offset = ($page - 1) * $perPage;
+
+          $countRows = DB::raw('SELECT COUNT(*) AS total FROM tasks');
+          $total = (int) ($countRows[0]['total'] ?? 0);
+
+          $rows = DB::raw(
+              '
+                  SELECT *
+                  FROM tasks
+                  ORDER BY id DESC
+                  LIMIT ?
+                  OFFSET ?
+              ',
+              [$perPage, $offset]
+          );
+
+          return [
+              'items' => array_map(
+                  static fn (array $row): self => self::fromDatabaseRow($row),
+                  $rows
+              ),
+              'total' => $total,
+              'page' => $page,
+              'per_page' => $perPage,
+          ];
+      }
+  }
+```
+
+```php
+  <?php
+
+  namespace Modules\Tasks\Models;
+
+  use Wayfinder\Database\DB;
+  use Wayfinder\Database\Model;
+
+  final class Task extends Model
+  {
+      protected static string $table = 'tasks';
+
+      /**
+       * @return list<self>
+       */
+      public static function nextPageAfterId(int $lastSeenId, int $perPage = 20): array
+      {
+          $rows = DB::raw(
+              '
+                  SELECT *
+                  FROM tasks
+                  WHERE id < ?
+                  ORDER BY id DESC
+                  LIMIT ?
+              ',
+              [$lastSeenId, $perPage]
+          );
+
+          return array_map(
+              static fn (array $row): self => self::fromDatabaseRow($row),
+              $rows
+          );
+      }
+  }
+```
+
+  A practical rule for these:
+
+  - DB::statement(...) for INSERT, UPDATE, DELETE
+  - DB::raw(...) for raw SELECT
+  - If pagination starts involving joins, filters across tables, or custom output shapes, move it to a Query + DTO instead of keeping it on the Model
+  
+
+Or use a more complicated data model for bigger applications:
+
+  1. Model: single table CRUD
+
+  This is the intended shape for “one table, entity behavior, CRUD”
+
+```php
+  <?php
+
+  namespace Modules\Tasks\Models;
+
+  use Wayfinder\Database\Model;
+
+  final class Task extends Model
+  {
+      protected static string $table = 'tasks';
+  }
+```
+
+  Usage:
+
+```php
+  // create
+  $task = Task::create([
+      'title' => 'Ship billing',
+      'status' => 'open',
+  ]);
+
+  // read one
+  $task = Task::find(1);
+
+  // filtered read
+  $openTasks = Task::where('status', 'open')
+      ->orderBy('id', 'DESC')
+      ->get();
+
+  // update
+  $task->update([
+      'status' => 'done',
+  ]);
+
+  // delete
+  $task->delete();
+```
+
+  Rule: if you are only touching tasks, stay in the Task model.
+
+  2. Query + DTO: single-table read model
+
+  This is already in the framework tests at wayfinder/framework/tests/Database/QueryTest.php.
+
+  DTO:
+```php
+  <?php
+
+  namespace Modules\Tasks\DTOs;
+
+  use Wayfinder\Database\DataTransferObject;
+
+  final class TaskListItemData extends DataTransferObject
+  {
+  }
+```
+
+  Query:
+
+```php
+  <?php
+
+  namespace Modules\Tasks\Queries;
+
+  use Modules\Tasks\DTOs\TaskListItemData;
+  use Wayfinder\Database\Query;
+
+  final class TaskListQuery extends Query
+  {
+      /**
+       * @return list<TaskListItemData>
+       */
+      public function execute(): array
+      {
+          return $this->many(
+              TaskListItemData::class,
+              'SELECT id, title, status FROM tasks WHERE archived_at IS NULL ORDER BY id DESC'
+          );
+      }
+  }
+```
+
+  Usage:
+
+```php
+  $items = (new TaskListQuery())->execute();
+```
+
+  Rule: even though this is still one table, it’s a read shape, not entity behavior. That makes Query + DTO reasonable.
+
+  3. Query + DTO with a join
+
+  This is the next step up: multiple tables, still read-only. This should be a Query, not a Model.
+
+  DTO:
+
+```php
+  <?php
+
+  namespace Modules\Tasks\DTOs;
+
+  use Wayfinder\Database\DataTransferObject;
+
+  final class TaskListItemData extends DataTransferObject
+  {
+  }
+```
+
+  Query:
+
+```php
+  <?php
+
+  namespace Modules\Tasks\Queries;
+
+  use Modules\Tasks\DTOs\TaskListItemData;
+  use Wayfinder\Database\Query;
+
+  final class TaskListQuery extends Query
+  {
+      /**
+       * @return list<TaskListItemData>
+       */
+      public function execute(): array
+      {
+          return $this->many(
+              TaskListItemData::class,
+              '
+                  SELECT
+                      t.id,
+                      t.title,
+                      t.status,
+                      p.name AS project_name,
+                      u.email AS assignee_email
+                  FROM tasks t
+                  INNER JOIN projects p ON p.id = t.project_id
+                  LEFT JOIN users u ON u.id = t.assignee_id
+                  WHERE t.archived_at IS NULL
+                  ORDER BY t.id DESC
+              '
+          );
+      }
+  }
+```
+
+  Each returned item is a DTO row like:
+
+  $item->id;
+  $item->title;
+  $item->status;
+  $item->project_name;
+  $item->assignee_email;
+
+  4. Query + DTO with join + aggregate
+
+  If you need grouped reporting, it stays in Query.
+
+  ```php
+  <?php
+
+  namespace Modules\Projects\DTOs;
+
+  use Wayfinder\Database\DataTransferObject;
+
+  final class ProjectTaskSummaryData extends DataTransferObject
+  {
+  }
+```
+
+```php
+  <?php
+
+  namespace Modules\Projects\Queries;
+
+  use Modules\Projects\DTOs\ProjectTaskSummaryData;
+  use Wayfinder\Database\Query;
+
+  final class ProjectTaskSummaryQuery extends Query
+  {
+      /**
+       * @return list<ProjectTaskSummaryData>
+       */
+      public function execute(): array
+      {
+          return $this->many(
+              ProjectTaskSummaryData::class,
+              '
+                  SELECT
+                      p.id,
+                      p.name,
+                      COUNT(t.id) AS task_count,
+                      SUM(CASE WHEN t.status = ? THEN 1 ELSE 0 END) AS done_count
+                  FROM projects p
+                  LEFT JOIN tasks t ON t.project_id = p.id
+                  GROUP BY p.id, p.name
+                  ORDER BY p.name ASC
+              ',
+              ['done']
+          );
+      }
+  }
+```
+
+  Rule of thumb
+
+  - Model: one table, CRUD, entity lifecycle
+  - Query: joins, aggregates, grouped reads, report/list screens
+  - DTO: typed output for a Query
+
+Simplified DB acccess via "raw":
+
+```php
+  use Wayfinder\Database\DB;
+
+  $sql = '
+      SELECT id, email, is_admin
+      FROM users
+      WHERE is_admin = ?
+      ORDER BY id DESC
+  ';
+
+  $rows = DB::raw($sql, [1]);
+```
+
+```php
+  use Wayfinder\Database\DB;
+
+  $sql = '
+      SELECT id, title, status
+      FROM tasks
+      WHERE project_id = ?
+        AND status = ?
+      ORDER BY id ASC
+  ';
+
+  $rows = DB::raw($sql, [$projectId, 'open']);
+```
+
+```php
+  use Wayfinder\Database\DB;
+
+  $sql = '
+      SELECT
+          t.id,
+          t.title,
+          p.name AS project_name
+      FROM tasks t
+      INNER JOIN projects p ON p.id = t.project_id
+      WHERE t.archived_at IS NULL
+      ORDER BY p.name ASC, t.id ASC
+  ';
+
+  $rows = DB::raw($sql);
+```
+
+```php
+  use Wayfinder\Database\DB;
+
+  $sql = '
+      SELECT
+          u.id,
+          u.name,
+          COUNT(t.id) AS task_count
+      FROM users u
+      LEFT JOIN tasks t ON t.assignee_id = u.id
+      WHERE u.status = ?
+      GROUP BY u.id, u.name
+      ORDER BY task_count DESC, u.name ASC
+  ';
+
+  $rows = DB::raw($sql, ['active']);
+```
+
+```php
+  use Wayfinder\Database\DB;
+
+  $sql = '
+      SELECT
+          p.id,
+          p.name,
+          SUM(CASE WHEN t.status = ? THEN 1 ELSE 0 END) AS done_count,
+          COUNT(t.id) AS total_count
+      FROM projects p
+      LEFT JOIN tasks t ON t.project_id = p.id
+      GROUP BY p.id, p.name
+      ORDER BY p.name ASC
+  ';
+
+  $rows = DB::raw($sql, ['done']);
+```
+
+```php
+  use Wayfinder\Database\DB;
+
+  $sql = '
+      WITH active_users AS (
+          SELECT id, name
+          FROM users
+          WHERE status = ?
+      )
+      SELECT
+          u.name,
+          COUNT(p.id) AS post_count
+      FROM active_users u
+      LEFT JOIN posts p ON p.user_id = u.id
+      GROUP BY u.id, u.name
+      ORDER BY u.name ASC
+  ';
+
+  $rows = DB::raw($sql, ['active']);
+```
+
+```php
+  use Wayfinder\Database\DB;
+
+  $sql = '
+      SELECT
+          DATE(created_at) AS day,
+          COUNT(*) AS registrations
+      FROM users
+      WHERE created_at >= ?
+        AND created_at < ?
+      GROUP BY DATE(created_at)
+      ORDER BY day ASC
+  ';
+
+  $rows = DB::raw($sql, [$startDate, $endDate]);
+```
+    
+Only use this below for quick access not in Controllers, Models, etc. but maybe for quick scripts use the DB api for database access.
+
 ```php
 <?php
 
