@@ -1,5 +1,8 @@
 # Stackmint PHP Framework
 
+![Static Badge](https://badgen.net/static/status/Early_Development/orange)
+
+
 Default starter application for the Stackmint framework.
 
 Stackmint is a next-generation PHP framework built for clarity. It stays explicit and simple so both developers and AI tools can reason about the codebase quickly. Instead of hiding behavior behind large amounts of framework magic, Stackmint keeps the application surface small and visible, which makes building and evolving features easier.
