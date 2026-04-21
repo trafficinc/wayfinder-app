@@ -1078,14 +1078,94 @@ Only use this below for quick access not in Controllers, Models, etc. but maybe 
 
 use Wayfinder\Database\DB;
 
-$users = DB::table('users')
+$users = DB::select('users')
     ->where('status', 'active')
     ->orderBy('id', 'DESC')
     ->limit(10)
-    ->get();
+    ->all();
 ```
 
-Common operations include `table`, `select`, `insert`, `update`, `delete`, `where`, `join`, `orderBy`, `limit`, `count`, `exists`, `value`, `pluck`, and `transaction()`.
+Common operations include `table`, `select`, `insert`, `update`, `delete`, `where`, `whereNull`, `whereNotNull`, `join`, `leftJoin`, `orderBy`, `limit`, `count`, `exists`, `value`, `pluck`, `params()`, and `transaction()`.
+
+### Model Style For Laravel Developers
+
+If you are used to Laravel, keep this mental model:
+
+- models still own entity-friendly data access
+- the fluent builder replaces most handwritten SQL
+- explicit joins are allowed
+- dashboards and report-style projections should still move into query classes
+
+Simple example:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Models;
+
+use Wayfinder\Database\Model;
+
+final class Task extends Model
+{
+    protected static string $table = 'tasks';
+
+    public static function findBySlug(string $slug): ?self
+    {
+        return static::where('slug', trim($slug))->first();
+    }
+
+    /**
+     * @return list<self>
+     */
+    public static function recentOpen(int $limit = 10): array
+    {
+        return static::query()
+            ->where('status', 'open')
+            ->orderBy('id', 'DESC')
+            ->limit($limit)
+            ->all();
+    }
+}
+```
+
+Explicit join example:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Models;
+
+use Wayfinder\Database\DB;
+use Wayfinder\Database\Model;
+
+final class Task extends Model
+{
+    protected static string $table = 'tasks';
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public static function dashboardRows(): array
+    {
+        return DB::select('tasks', [
+            'tasks.id',
+            'tasks.title',
+            'tasks.status',
+            'users.name',
+        ])
+            ->leftJoin('users', 'users.id', '=', 'tasks.assigned_user_id')
+            ->where('tasks.status', 'open')
+            ->orderBy('tasks.id', 'DESC')
+            ->all();
+    }
+}
+```
+
+Use models for task-centric persistence and direct lookups. Use query classes when the read shape stops looking like a single entity.
 
 Schema changes use `Wayfinder\Database\Schema` in migration files:
 
