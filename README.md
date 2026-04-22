@@ -1085,6 +1085,35 @@ $users = DB::select('users')
     ->all();
 ```
 
+The global helper keeps the default connection ergonomic and lets you opt into a named connection only when needed:
+
+```php
+$defaultUsers = db()->select('users')->all();
+$reportingUsers = db('reporting')->select('users')->all();
+```
+
+Database config supports either the legacy single-array form or a named `connections` map:
+
+```php
+return [
+    'default' => 'default',
+    'connections' => [
+        'default' => [
+            'driver' => 'sqlite',
+            'path' => __DIR__ . '/../database/database.sqlite',
+        ],
+        'reporting' => [
+            'driver' => 'pgsql',
+            'host' => '127.0.0.1',
+            'port' => 5432,
+            'dbname' => 'reporting',
+            'username' => 'app',
+            'password' => '',
+        ],
+    ],
+];
+```
+
 Common operations include `table`, `select`, `insert`, `update`, `delete`, `where`, `whereNull`, `whereNotNull`, `join`, `leftJoin`, `orderBy`, `limit`, `count`, `exists`, `value`, `pluck`, `params()`, and `transaction()`.
 
 ### Model Style For Laravel Developers
@@ -1400,6 +1429,7 @@ A typical bootstrap wires config, container, events, database, and router explic
 <?php
 
 use Wayfinder\Database\Database;
+use Wayfinder\Database\DatabaseManager;
 use Wayfinder\Foundation\AppKernel;
 use Wayfinder\Routing\Router;
 use Wayfinder\Support\Config;
@@ -1413,7 +1443,8 @@ $events = new EventDispatcher();
 Events::setDispatcher($events);
 
 $container->instance(Config::class, $config);
-$container->singleton(Database::class, fn () => new Database($config->get('database.default')));
+$container->singleton(DatabaseManager::class, fn () => new DatabaseManager($config->get('database')));
+$container->singleton(Database::class, fn (Container $container) => $container->get(DatabaseManager::class)->connection());
 
 $router = new Router($container, $events, 'App\\Controllers\\');
 

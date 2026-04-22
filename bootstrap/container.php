@@ -38,6 +38,7 @@ use Wayfinder\Contracts\Container as ContainerContract;
 use Wayfinder\Contracts\EventDispatcher as EventDispatcherContract;
 use Wayfinder\Database\Database;
 use Wayfinder\Database\DB;
+use Wayfinder\Database\DatabaseManager;
 use Wayfinder\Database\MigrationRepository;
 use Wayfinder\Database\Migrator;
 use Wayfinder\Foundation\AppKernel;
@@ -133,8 +134,11 @@ $container->singleton(Mailer::class, static fn (Container $container): Mailer =>
     return $container->get(MailFactory::class)->make(is_array($mailer) ? $mailer : []);
 })());
 
+$databaseConfig = $config->get('database', []);
+$databaseManager = new DatabaseManager(is_array($databaseConfig) ? $databaseConfig : []);
+
 $container->singleton(QueueFactory::class, static fn (Container $container): QueueFactory => new QueueFactory(
-    is_array($config->get('database.default')) ? $container->get(Database::class) : null,
+    $databaseManager->hasConnections() ? $container->get(Database::class) : null,
 ));
 $container->singleton(Queue::class, static fn (Container $container): Queue => (static function () use ($config, $container): Queue {
     $default = (string) $config->get('queue.default', 'file');
@@ -155,11 +159,10 @@ $container->singleton(Worker::class, static fn (Container $container): Worker =>
     (int) $config->get('queue.max_attempts', 3),
 ));
 
-$databaseConfig = $config->get('database.default');
-
-if (is_array($databaseConfig)) {
-    $container->singleton(Database::class, static fn (): Database => new Database($databaseConfig));
-    DB::setResolver(static fn (): Database => $container->get(Database::class));
+if ($databaseManager->hasConnections()) {
+    $container->singleton(DatabaseManager::class, static fn (): DatabaseManager => $databaseManager);
+    $container->singleton(Database::class, static fn (Container $container): Database => $container->get(DatabaseManager::class)->connection());
+    DB::setResolver(static fn (?string $name = null): Database => $container->get(DatabaseManager::class)->connection($name));
     $container->singleton(MigrationRepository::class, static fn (Container $container): MigrationRepository => new MigrationRepository(
         $container->get(Database::class),
         (string) $config->get('database.migrations_table', 'migrations'),
